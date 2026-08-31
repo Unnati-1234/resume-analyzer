@@ -1,6 +1,8 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const fs = require('fs')
+const path = require('path')
 
 dotenv.config();
 
@@ -15,6 +17,12 @@ const errorMiddleware = require("./middleware/errorMiddleware");
 const notFoundMiddleware = require("./middleware/notFoundMiddleware");
 
 const app = express();
+
+const uploadsPath = path.join(__dirname, 'uploads')
+
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath, { recursive: true })
+}
 
 app.use(
   cors({
