@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import {
   analyzeResume,
+  deleteResume,
+  downloadResume,
   getUserResumes,
   uploadResume,
 } from '../services/resumeService'
@@ -17,6 +19,8 @@ function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [analyzingId, setAnalyzingId] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
+  const [downloadingId, setDownloadingId] = useState(null)
 
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
@@ -24,6 +28,8 @@ function Dashboard() {
   const [selectedAnalysis, setSelectedAnalysis] = useState(null)
   const [selectedJobMatch, setSelectedJobMatch] = useState(null)
   const [showHistory, setShowHistory] = useState(false)
+
+  const [deleteTarget, setDeleteTarget] = useState(null)
 
   // ========================================
   // LOAD RESUMES
@@ -105,7 +111,6 @@ function Dashboard() {
     } finally {
       setUploading(false)
 
-      // Allow the same file to be selected again
       event.target.value = ''
     }
   }
@@ -138,6 +143,95 @@ function Dashboard() {
       setMessage('')
     } finally {
       setAnalyzingId(null)
+    }
+  }
+
+  // ========================================
+  // DOWNLOAD RESUME
+  // ========================================
+
+  const handleDownload = async (resumeId, resumeName) => {
+    if (!resumeId) {
+      setError('Unable to identify this resume.')
+      return
+    }
+
+    try {
+      setDownloadingId(resumeId)
+      setError('')
+      setMessage('Preparing your resume...')
+
+      const response = await downloadResume(resumeId)
+
+      /*
+       * Depending on your api.js implementation,
+       * the response may already be a Blob or may
+       * contain the file data.
+       */
+
+      const blob =
+        response instanceof Blob
+          ? response
+          : response?.data instanceof Blob
+            ? response.data
+            : new Blob([response])
+
+      const url = window.URL.createObjectURL(blob)
+
+      const link = document.createElement('a')
+
+      link.href = url
+      link.download = resumeName || 'resume.pdf'
+
+      document.body.appendChild(link)
+      link.click()
+
+      link.remove()
+      window.URL.revokeObjectURL(url)
+
+      setMessage('Resume downloaded successfully.')
+    } catch (error) {
+      setError(error.message || 'Failed to download resume.')
+      setMessage('')
+    } finally {
+      setDownloadingId(null)
+    }
+  }
+
+  // ========================================
+  // DELETE RESUME
+  // ========================================
+
+  const handleDelete = async () => {
+    if (!deleteTarget?.id) return
+
+    try {
+      setDeletingId(deleteTarget.id)
+      setError('')
+      setMessage('')
+
+      await deleteResume(deleteTarget.id)
+
+      setResumes((currentResumes) =>
+        currentResumes.filter(
+          (resume) => {
+            const id =
+              resume.id ||
+              resume.resume_id ||
+              resume.resumeId
+
+            return id !== deleteTarget.id
+          }
+        )
+      )
+
+      setDeleteTarget(null)
+
+      setMessage('Resume deleted successfully.')
+    } catch (error) {
+      setError(error.message || 'Failed to delete resume.')
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -289,7 +383,7 @@ function Dashboard() {
 
           </div>
 
-          {/* UPLOAD BUTTON */}
+          {/* UPLOAD */}
 
           <div>
 
@@ -331,7 +425,7 @@ function Dashboard() {
         </section>
 
         {/* ========================================
-            SUCCESS / ERROR MESSAGE
+            SUCCESS / ERROR
         ======================================== */}
 
         {(error || message) && (
@@ -358,8 +452,6 @@ function Dashboard() {
 
         <section className="mt-8 grid gap-px overflow-hidden border border-white/[0.07] bg-white/[0.07] sm:grid-cols-3">
 
-          {/* RESUMES */}
-
           <div className="bg-[#142c30]/80 p-6">
 
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#718986]">
@@ -376,8 +468,6 @@ function Dashboard() {
 
           </div>
 
-          {/* ANALYSIS */}
-
           <div className="bg-[#142c30]/80 p-6">
 
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#718986]">
@@ -393,8 +483,6 @@ function Dashboard() {
             </p>
 
           </div>
-
-          {/* JOB MATCH */}
 
           <div className="bg-[#142c30]/80 p-6">
 
@@ -420,8 +508,6 @@ function Dashboard() {
 
         <section className="mt-10">
 
-          {/* SECTION HEADER */}
-
           <div className="mb-5 flex items-end justify-between gap-4">
 
             <div>
@@ -438,13 +524,15 @@ function Dashboard() {
 
             <span className="text-xs text-[#657c78]">
               {resumes.length}{' '}
-              {resumes.length === 1 ? 'resume' : 'resumes'}
+              {resumes.length === 1
+                ? 'resume'
+                : 'resumes'}
             </span>
 
           </div>
 
           {/* ========================================
-              LOADING STATE
+              LOADING
           ======================================== */}
 
           {loading && (
@@ -462,7 +550,7 @@ function Dashboard() {
           )}
 
           {/* ========================================
-              EMPTY STATE
+              EMPTY
           ======================================== */}
 
           {!loading && resumes.length === 0 && !error && (
@@ -486,7 +574,9 @@ function Dashboard() {
                 disabled={uploading}
                 className="mt-6 bg-[#8fcdbc] px-5 py-3 text-sm font-semibold text-[#10282c] transition hover:bg-[#a5ddcd] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {uploading ? 'Uploading...' : 'Upload resume'}
+                {uploading
+                  ? 'Uploading...'
+                  : 'Upload resume'}
               </button>
 
             </div>
@@ -516,82 +606,163 @@ function Dashboard() {
                 const isAnalyzing =
                   analyzingId === resumeId
 
+                const isDownloading =
+                  downloadingId === resumeId
+
+                const isDeleting =
+                  deletingId === resumeId
+
                 return (
                   <div
                     key={resumeId || index}
-                    className="group flex flex-col gap-5 border border-white/[0.08] bg-[#142c30]/65 p-5 transition duration-200 hover:border-[#8fcdbc]/20 hover:bg-[#173237] sm:flex-row sm:items-center sm:justify-between"
+                    className="group border border-white/[0.08] bg-[#142c30]/65 p-5 transition duration-200 hover:border-[#8fcdbc]/20 hover:bg-[#173237]"
                   >
 
-                    {/* RESUME INFORMATION */}
+                    <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
 
-                    <div className="flex min-w-0 items-center gap-4">
+                      {/* ========================================
+                          RESUME INFO
+                      ======================================== */}
 
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-[#8fcdbc]/15 bg-[#8fcdbc]/[0.06] text-xs font-bold text-[#8fcdbc]">
-                        CV
+                      <div className="flex min-w-0 items-center gap-4">
+
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-[#8fcdbc]/15 bg-[#8fcdbc]/[0.06] text-xs font-bold text-[#8fcdbc]">
+                          CV
+                        </div>
+
+                        <div className="min-w-0">
+
+                          <h3 className="truncate text-sm font-semibold text-[#dce8e4]">
+                            {resumeName}
+                          </h3>
+
+                          <p className="mt-1 text-xs text-[#718986]">
+                            Ready for analysis
+                          </p>
+
+                        </div>
+
                       </div>
 
-                      <div className="min-w-0">
+                      {/* ========================================
+                          ACTIONS
+                      ======================================== */}
 
-                        <h3 className="truncate text-sm font-semibold text-[#dce8e4]">
-                          {resumeName}
-                        </h3>
+                      <div className="flex flex-wrap gap-2">
 
-                        <p className="mt-1 text-xs text-[#718986]">
-                          Ready for analysis
-                        </p>
+                        {/* DOWNLOAD */}
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleDownload(
+                              resumeId,
+                              resumeName
+                            )
+                          }
+                          disabled={
+                            !resumeId ||
+                            isDownloading ||
+                            isDeleting
+                          }
+                          className="flex min-w-[105px] items-center justify-center gap-2 border border-white/[0.08] bg-white/[0.025] px-4 py-2.5 text-xs font-semibold text-[#9aaea9] transition hover:border-[#8fcdbc]/25 hover:bg-[#8fcdbc]/[0.05] hover:text-[#a9d9cc] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+
+                          {isDownloading ? (
+                            <>
+                              <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#8fcdbc]/30 border-t-[#8fcdbc]" />
+
+                              Preparing
+                            </>
+                          ) : (
+                            <>
+                              ↓
+
+                              Download
+                            </>
+                          )}
+
+                        </button>
+
+                        {/* ANALYZE */}
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleAnalyze(
+                              resumeId,
+                              resumeName
+                            )
+                          }
+                          disabled={
+                            isAnalyzing ||
+                            !resumeId ||
+                            isDeleting
+                          }
+                          className="flex min-w-[125px] items-center justify-center gap-2 border border-[#8fcdbc]/20 bg-[#8fcdbc]/[0.06] px-4 py-2.5 text-xs font-semibold text-[#9fd6c7] transition duration-200 hover:border-[#8fcdbc]/40 hover:bg-[#8fcdbc]/[0.1] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+
+                          {isAnalyzing ? (
+                            <>
+                              <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#8fcdbc]/30 border-t-[#8fcdbc]" />
+
+                              Analyzing
+                            </>
+                          ) : (
+                            'Analyze'
+                          )}
+
+                        </button>
+
+                        {/* JOB MATCH */}
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setSelectedJobMatch({
+                              id: resumeId,
+                              name: resumeName,
+                            })
+                          }
+                          disabled={
+                            !resumeId ||
+                            isDeleting
+                          }
+                          className="flex min-w-[105px] items-center justify-center border border-white/[0.08] bg-white/[0.025] px-4 py-2.5 text-xs font-semibold text-[#9aaea9] transition hover:border-[#8fcdbc]/25 hover:text-[#a9d9cc] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Job match
+                        </button>
+
+                        {/* DELETE */}
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setDeleteTarget({
+                              id: resumeId,
+                              name: resumeName,
+                            })
+                          }
+                          disabled={
+                            !resumeId ||
+                            isDeleting
+                          }
+                          className="flex min-w-[85px] items-center justify-center gap-2 border border-[#d89572]/15 bg-[#d89572]/[0.025] px-4 py-2.5 text-xs font-semibold text-[#c99682] transition hover:border-[#d89572]/35 hover:bg-[#d89572]/[0.07] hover:text-[#e0ad99] disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+
+                          {isDeleting ? (
+                            <>
+                              <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#d89572]/30 border-t-[#d89572]" />
+
+                              Deleting
+                            </>
+                          ) : (
+                            'Delete'
+                          )}
+
+                        </button>
 
                       </div>
-
-                    </div>
-
-                    {/* ACTION BUTTONS */}
-
-                    <div className="flex flex-col gap-2 sm:flex-row">
-
-                      {/* ANALYZE */}
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleAnalyze(
-                            resumeId,
-                            resumeName
-                          )
-                        }
-                        disabled={
-                          isAnalyzing ||
-                          !resumeId
-                        }
-                        className="flex min-w-[130px] items-center justify-center gap-2 border border-[#8fcdbc]/20 bg-[#8fcdbc]/[0.06] px-4 py-2.5 text-xs font-semibold text-[#9fd6c7] transition duration-200 hover:border-[#8fcdbc]/40 hover:bg-[#8fcdbc]/[0.1] disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-
-                        {isAnalyzing ? (
-                          <>
-                            <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#8fcdbc]/30 border-t-[#8fcdbc]" />
-
-                            Analyzing
-                          </>
-                        ) : (
-                          'Analyze'
-                        )}
-
-                      </button>
-
-                      {/* JOB MATCH */}
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelectedJobMatch({
-                            id: resumeId,
-                            name: resumeName,
-                          })
-                        }
-                        disabled={!resumeId}
-                        className="flex min-w-[110px] items-center justify-center border border-white/[0.08] bg-white/[0.025] px-4 py-2.5 text-xs font-semibold text-[#9aaea9] transition hover:border-[#8fcdbc]/25 hover:text-[#a9d9cc] disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        Job match
-                      </button>
 
                     </div>
 
@@ -605,6 +776,85 @@ function Dashboard() {
         </section>
 
       </div>
+
+      {/* ========================================
+          DELETE CONFIRMATION MODAL
+      ======================================== */}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#061215]/80 px-5 backdrop-blur-sm">
+
+          <div className="w-full max-w-md border border-white/[0.1] bg-[#142c30] p-6 shadow-[0_25px_80px_rgba(0,0,0,0.45)]">
+
+            {/* MODAL HEADER */}
+
+            <div className="flex items-start gap-4">
+
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-[#d89572]/20 bg-[#d89572]/[0.07] text-sm text-[#d89572]">
+                !
+              </div>
+
+              <div>
+
+                <h2 className="text-lg font-semibold text-[#e8f1ee]">
+                  Delete resume?
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-[#829894]">
+                  You're about to permanently delete:
+                </p>
+
+                <p className="mt-2 break-all text-sm font-medium text-[#c9d8d4]">
+                  {deleteTarget.name}
+                </p>
+
+              </div>
+
+            </div>
+
+            <p className="mt-5 border-t border-white/[0.07] pt-5 text-xs leading-5 text-[#687f7b]">
+              This action cannot be undone. The uploaded resume will be
+              removed from your account.
+            </p>
+
+            {/* ACTIONS */}
+
+            <div className="mt-6 flex justify-end gap-2">
+
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deletingId === deleteTarget.id}
+                className="border border-white/[0.08] bg-white/[0.025] px-4 py-2.5 text-xs font-semibold text-[#9aaea9] transition hover:bg-white/[0.05] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deletingId === deleteTarget.id}
+                className="flex min-w-[110px] items-center justify-center gap-2 bg-[#d89572] px-4 py-2.5 text-xs font-semibold text-[#1d2424] transition hover:bg-[#e1a287] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+
+                {deletingId === deleteTarget.id ? (
+                  <>
+                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#1d2424]/30 border-t-[#1d2424]" />
+
+                    Deleting
+                  </>
+                ) : (
+                  'Delete resume'
+                )}
+
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+      )}
 
     </main>
   )
