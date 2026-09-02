@@ -85,7 +85,10 @@ const getResumeById = async (resumeId, userId) => {
     WHERE id = $1 AND user_id = $2
   `;
 
-  const result = await pool.query(query, [resumeId, userId]);
+  const result = await pool.query(query, [
+    resumeId,
+    userId
+  ]);
 
   return result.rows[0];
 };
@@ -100,7 +103,15 @@ const saveResumeAnalysis = async ({
   skillScore,
   lengthScore,
   sections,
-  recommendations
+  recommendations,
+  contentScore,
+  detailedSectionScores,
+  strengths,
+  weaknesses,
+  contactInformation,
+  actionVerbs,
+  quantifiableAchievements,
+  atsCompatibility
 }) => {
   const query = `
     INSERT INTO resume_analyses (
@@ -113,9 +124,20 @@ const saveResumeAnalysis = async ({
       skill_score,
       length_score,
       sections,
-      recommendations
+      recommendations,
+      content_score,
+      detailed_section_scores,
+      strengths,
+      weaknesses,
+      contact_information,
+      action_verbs,
+      quantifiable_achievements,
+      ats_compatibility
     )
-    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+    VALUES (
+      $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+      $11, $12, $13, $14, $15, $16, $17, $18
+    )
     ON CONFLICT (resume_id)
     DO UPDATE SET
       overall_score = EXCLUDED.overall_score,
@@ -127,6 +149,14 @@ const saveResumeAnalysis = async ({
       length_score = EXCLUDED.length_score,
       sections = EXCLUDED.sections,
       recommendations = EXCLUDED.recommendations,
+      content_score = EXCLUDED.content_score,
+      detailed_section_scores = EXCLUDED.detailed_section_scores,
+      strengths = EXCLUDED.strengths,
+      weaknesses = EXCLUDED.weaknesses,
+      contact_information = EXCLUDED.contact_information,
+      action_verbs = EXCLUDED.action_verbs,
+      quantifiable_achievements = EXCLUDED.quantifiable_achievements,
+      ats_compatibility = EXCLUDED.ats_compatibility,
       updated_at = CURRENT_TIMESTAMP
     RETURNING *;
   `;
@@ -141,7 +171,15 @@ const saveResumeAnalysis = async ({
     skillScore,
     lengthScore,
     JSON.stringify(sections),
-    recommendations
+    recommendations,
+    contentScore || 0,
+    JSON.stringify(detailedSectionScores || {}),
+    strengths || [],
+    weaknesses || [],
+    JSON.stringify(contactInformation || {}),
+    actionVerbs || [],
+    JSON.stringify(quantifiableAchievements || {}),
+    JSON.stringify(atsCompatibility || {})
   ];
 
   const result = await pool.query(query, values);
@@ -167,6 +205,7 @@ const getAnalysisHistoryByUserId = async (userId) => {
       r.id AS resume_id,
       r.original_name,
       r.created_at AS resume_created_at,
+
       a.id AS analysis_id,
       a.overall_score,
       a.word_count,
@@ -177,12 +216,25 @@ const getAnalysisHistoryByUserId = async (userId) => {
       a.length_score,
       a.sections,
       a.recommendations,
+
+      a.content_score,
+      a.detailed_section_scores,
+      a.strengths,
+      a.weaknesses,
+      a.contact_information,
+      a.action_verbs,
+      a.quantifiable_achievements,
+      a.ats_compatibility,
+
       a.created_at AS analysis_created_at,
       a.updated_at AS analysis_updated_at
+
     FROM resumes r
     INNER JOIN resume_analyses a
       ON r.id = a.resume_id
+
     WHERE r.user_id = $1
+
     ORDER BY a.updated_at DESC
   `;
 
@@ -198,7 +250,10 @@ const deleteResume = async (resumeId, userId) => {
     RETURNING *
   `;
 
-  const result = await pool.query(query, [resumeId, userId]);
+  const result = await pool.query(query, [
+    resumeId,
+    userId
+  ]);
 
   return result.rows[0];
 };

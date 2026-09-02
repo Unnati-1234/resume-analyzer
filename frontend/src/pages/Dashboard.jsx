@@ -1,5 +1,8 @@
+
 import { useEffect, useRef, useState } from 'react'
+
 import { useAuth } from '../context/AuthContext.jsx'
+
 import {
   analyzeResume,
   deleteResume,
@@ -7,12 +10,14 @@ import {
   getUserResumes,
   uploadResume,
 } from '../services/resumeService'
+
 import Analysis from './Analysis.jsx'
 import JobMatch from './JobMatch.jsx'
 import History from './History.jsx'
 
 function Dashboard() {
   const { logout } = useAuth()
+
   const fileInputRef = useRef(null)
 
   const [resumes, setResumes] = useState([])
@@ -28,7 +33,6 @@ function Dashboard() {
   const [selectedAnalysis, setSelectedAnalysis] = useState(null)
   const [selectedJobMatch, setSelectedJobMatch] = useState(null)
   const [showHistory, setShowHistory] = useState(false)
-
   const [deleteTarget, setDeleteTarget] = useState(null)
 
   // ========================================
@@ -110,7 +114,6 @@ function Dashboard() {
       setError(error.message || 'Failed to upload resume.')
     } finally {
       setUploading(false)
-
       event.target.value = ''
     }
   }
@@ -163,12 +166,6 @@ function Dashboard() {
 
       const response = await downloadResume(resumeId)
 
-      /*
-       * Depending on your api.js implementation,
-       * the response may already be a Blob or may
-       * contain the file data.
-       */
-
       const blob =
         response instanceof Blob
           ? response
@@ -184,9 +181,11 @@ function Dashboard() {
       link.download = resumeName || 'resume.pdf'
 
       document.body.appendChild(link)
+
       link.click()
 
       link.remove()
+
       window.URL.revokeObjectURL(url)
 
       setMessage('Resume downloaded successfully.')
@@ -213,16 +212,14 @@ function Dashboard() {
       await deleteResume(deleteTarget.id)
 
       setResumes((currentResumes) =>
-        currentResumes.filter(
-          (resume) => {
-            const id =
-              resume.id ||
-              resume.resume_id ||
-              resume.resumeId
+        currentResumes.filter((resume) => {
+          const id =
+            resume.id ||
+            resume.resume_id ||
+            resume.resumeId
 
-            return id !== deleteTarget.id
-          }
-        )
+          return id !== deleteTarget.id
+        }),
       )
 
       setDeleteTarget(null)
@@ -292,29 +289,30 @@ function Dashboard() {
   // ========================================
 
   return (
-    <main className="min-h-screen bg-[#0d2024] text-[#edf5f2]">
+    <main className="min-h-screen bg-[#080C18] text-[#F8FAFC]">
 
       {/* ========================================
           HEADER
       ======================================== */}
 
-      <header className="border-b border-white/[0.07] bg-[#10272b]/80 backdrop-blur-xl">
-        <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between px-6 sm:px-8 lg:px-10">
+      <header className="sticky top-0 z-40 border-b border-white/[0.08] bg-[#0D1220]/95 backdrop-blur-md">
+
+        <div className="mx-auto flex min-h-[72px] max-w-7xl items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
 
           {/* BRAND */}
 
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
 
-            <div className="flex h-9 w-9 items-center justify-center border border-[#8fcdbc]/20 bg-[#8fcdbc]/[0.07] text-xs font-bold text-[#8fcdbc]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#6366F1]/30 bg-[#6366F1]/10 text-sm font-bold tracking-wide text-[#A5B4FC]">
               RA
             </div>
 
-            <div>
-              <p className="text-sm font-semibold tracking-wide text-[#e4efec]">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold tracking-wide text-[#F8FAFC]">
                 Resume Analyzer
               </p>
 
-              <p className="hidden text-[11px] text-[#657d79] sm:block">
+              <p className="hidden text-[11px] text-[#64748B] sm:block">
                 Career intelligence workspace
               </p>
             </div>
@@ -323,9 +321,7 @@ function Dashboard() {
 
           {/* HEADER ACTIONS */}
 
-          <div className="flex items-center gap-2">
-
-            {/* HISTORY */}
+          <div className="flex shrink-0 items-center gap-2">
 
             <button
               type="button"
@@ -334,17 +330,15 @@ function Dashboard() {
                 setMessage('')
                 setShowHistory(true)
               }}
-              className="border border-white/[0.09] bg-white/[0.035] px-4 py-2.5 text-xs font-semibold text-[#9fb1ae] transition duration-200 hover:border-[#8fcdbc]/25 hover:bg-[#8fcdbc]/[0.06] hover:text-[#a9d9cc]"
+              className="rounded-lg border border-white/[0.08] bg-[#121827] px-3.5 py-2.5 text-xs font-semibold text-[#CBD5E1] transition duration-200 hover:border-[#6366F1]/35 hover:bg-[#6366F1]/10 hover:text-[#A5B4FC]"
             >
               History
             </button>
 
-            {/* LOGOUT */}
-
             <button
               type="button"
               onClick={logout}
-              className="border border-white/[0.09] bg-white/[0.035] px-4 py-2.5 text-xs font-semibold text-[#9fb1ae] transition duration-200 hover:border-[#d89572]/30 hover:bg-[#d89572]/[0.07] hover:text-[#e3b19b]"
+              className="rounded-lg border border-white/[0.08] bg-[#121827] px-3.5 py-2.5 text-xs font-semibold text-[#94A3B8] transition duration-200 hover:border-[#EF4444]/30 hover:bg-[#EF4444]/10 hover:text-[#FCA5A5]"
             >
               Sign out
             </button>
@@ -352,40 +346,47 @@ function Dashboard() {
           </div>
 
         </div>
+
       </header>
 
       {/* ========================================
           MAIN CONTENT
       ======================================== */}
 
-      <div className="mx-auto max-w-7xl px-6 py-9 sm:px-8 lg:px-10 lg:py-12">
+      <div className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:px-10 lg:py-14">
 
         {/* ========================================
             HERO
         ======================================== */}
 
-        <section className="flex flex-col gap-7 border-b border-white/[0.07] pb-9 sm:flex-row sm:items-end sm:justify-between">
+        <section className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
 
-          <div>
+          <div className="max-w-2xl">
 
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#8fcdbc]">
-              Overview
-            </p>
+            <div className="mb-4 inline-flex items-center gap-2 border border-[#10B981]/20 bg-[#10B981]/[0.06] px-3 py-1.5 rounded-lg">
 
-            <h1 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-[#f0f5f2] sm:text-4xl">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
+
+              <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[#6EE7B7]">
+                Overview
+              </span>
+
+            </div>
+
+            <h1 className="text-4xl font-semibold tracking-[-0.04em] text-[#F8FAFC] sm:text-5xl">
               Your workspace
             </h1>
 
-            <p className="mt-3 max-w-xl text-sm leading-6 text-[#879d99]">
+            <p className="mt-4 max-w-xl text-sm leading-7 text-[#94A3B8]">
               Upload your resume, analyze your profile, and understand where
-              you can improve.
+              you can improve your chances of landing the right opportunity.
             </p>
 
           </div>
 
           {/* UPLOAD */}
 
-          <div>
+          <div className="shrink-0">
 
             <input
               ref={fileInputRef}
@@ -399,20 +400,19 @@ function Dashboard() {
               type="button"
               onClick={openFilePicker}
               disabled={uploading}
-              className="group flex min-w-[165px] items-center justify-center gap-3 bg-[#8fcdbc] px-5 py-3 text-sm font-semibold text-[#10282c] shadow-[0_10px_30px_rgba(143,205,188,0.1)] transition duration-200 hover:-translate-y-0.5 hover:bg-[#a5ddcd] disabled:cursor-not-allowed disabled:opacity-60"
+              className="group flex min-w-[175px] items-center justify-center gap-3 rounded-lg bg-[#6366F1] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_10px_30px_rgba(99,102,241,0.18)] transition duration-200 hover:bg-[#818CF8] hover:shadow-[0_12px_35px_rgba(99,102,241,0.25)] disabled:cursor-not-allowed disabled:opacity-60"
             >
 
               {uploading ? (
                 <>
-                  <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-[#10282c]/30 border-t-[#10282c]" />
-
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                   Uploading...
                 </>
               ) : (
                 <>
                   Upload resume
 
-                  <span className="transition-transform duration-200 group-hover:-translate-y-0.5">
+                  <span className="text-lg leading-none transition-transform duration-200 group-hover:-translate-y-0.5">
                     ↑
                   </span>
                 </>
@@ -429,72 +429,116 @@ function Dashboard() {
         ======================================== */}
 
         {(error || message) && (
-          <div className="mt-6">
+
+          <div className="mt-8">
 
             {error && (
-              <div className="border border-[#d89572]/20 bg-[#d89572]/[0.07] px-5 py-4 text-sm leading-6 text-[#e3ad96]">
+              <div className="border border-[#EF4444]/20 bg-[#EF4444]/[0.06] px-5 py-4 text-sm leading-6 text-[#FCA5A5] rounded-xl">
                 {error}
               </div>
             )}
 
             {message && !error && (
-              <div className="border border-[#8fcdbc]/20 bg-[#8fcdbc]/[0.07] px-5 py-4 text-sm leading-6 text-[#a9d9cc]">
+              <div className="border border-[#10B981]/20 bg-[#10B981]/[0.06] px-5 py-4 text-sm leading-6 text-[#6EE7B7] rounded-xl">
                 {message}
               </div>
             )}
 
           </div>
+
         )}
 
         {/* ========================================
             STATS
         ======================================== */}
 
-        <section className="mt-8 grid gap-px overflow-hidden border border-white/[0.07] bg-white/[0.07] sm:grid-cols-3">
+        <section className="mt-10 grid gap-4 md:grid-cols-3">
 
-          <div className="bg-[#142c30]/80 p-6">
+          {/* RESUMES */}
 
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#718986]">
-              Resumes
-            </p>
+          <div className="rounded-xl border border-white/[0.08] bg-[#121827] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.15)] transition duration-200 hover:border-[#6366F1]/25">
 
-            <p className="mt-3 text-3xl font-semibold tracking-tight text-[#e8f1ee]">
-              {loading ? '—' : resumes.length}
-            </p>
+            <div className="flex items-start justify-between gap-4">
 
-            <p className="mt-2 text-xs text-[#718986]">
+              <div>
+
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
+                  Resumes
+                </p>
+
+                <p className="mt-3 text-4xl font-semibold tracking-tight text-[#F8FAFC]">
+                  {loading ? '—' : resumes.length}
+                </p>
+
+              </div>
+
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#6366F1]/15 bg-[#6366F1]/10 text-sm text-[#A5B4FC]">
+                CV
+              </div>
+
+            </div>
+
+            <p className="mt-3 text-xs text-[#64748B]">
               Uploaded to your workspace
             </p>
 
           </div>
 
-          <div className="bg-[#142c30]/80 p-6">
+          {/* ANALYSIS */}
 
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#718986]">
-              Analysis
-            </p>
+          <div className="rounded-xl border border-white/[0.08] bg-[#121827] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.15)] transition duration-200 hover:border-[#10B981]/25">
 
-            <p className="mt-3 text-3xl font-semibold tracking-tight text-[#e8f1ee]">
-              —
-            </p>
+            <div className="flex items-start justify-between gap-4">
 
-            <p className="mt-2 text-xs text-[#718986]">
+              <div>
+
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
+                  Analysis
+                </p>
+
+                <p className="mt-3 text-4xl font-semibold tracking-tight text-[#F8FAFC]">
+                  —
+                </p>
+
+              </div>
+
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#10B981]/15 bg-[#10B981]/10 text-sm text-[#34D399]">
+                +
+              </div>
+
+            </div>
+
+            <p className="mt-3 text-xs text-[#64748B]">
               Resume insights
             </p>
 
           </div>
 
-          <div className="bg-[#142c30]/80 p-6">
+          {/* JOB MATCH */}
 
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#718986]">
-              Job matches
-            </p>
+          <div className="rounded-xl border border-white/[0.08] bg-[#121827] p-6 shadow-[0_18px_60px_rgba(0,0,0,0.15)] transition duration-200 hover:border-[#6366F1]/25">
 
-            <p className="mt-3 text-3xl font-semibold tracking-tight text-[#e8f1ee]">
-              —
-            </p>
+            <div className="flex items-start justify-between gap-4">
 
-            <p className="mt-2 text-xs text-[#718986]">
+              <div>
+
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#64748B]">
+                  Job matches
+                </p>
+
+                <p className="mt-3 text-4xl font-semibold tracking-tight text-[#F8FAFC]">
+                  —
+                </p>
+
+              </div>
+
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-[#6366F1]/15 bg-[#6366F1]/10 text-sm text-[#A5B4FC]">
+                %
+              </div>
+
+            </div>
+
+            <p className="mt-3 text-xs text-[#64748B]">
               Role compatibility
             </p>
 
@@ -506,27 +550,25 @@ function Dashboard() {
             RESUME LIBRARY
         ======================================== */}
 
-        <section className="mt-10">
+        <section className="mt-12">
 
-          <div className="mb-5 flex items-end justify-between gap-4">
+          <div className="mb-6 flex items-end justify-between gap-4">
 
             <div>
 
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#718986]">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#64748B]">
                 Resume library
               </p>
 
-              <h2 className="mt-2 text-xl font-semibold text-[#e8f1ee]">
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#F8FAFC]">
                 Your resumes
               </h2>
 
             </div>
 
-            <span className="text-xs text-[#657c78]">
+            <span className="shrink-0 border border-white/[0.08] bg-[#121827] px-3 py-1.5 text-xs text-[#94A3B8] rounded-lg">
               {resumes.length}{' '}
-              {resumes.length === 1
-                ? 'resume'
-                : 'resumes'}
+              {resumes.length === 1 ? 'resume' : 'resumes'}
             </span>
 
           </div>
@@ -536,50 +578,53 @@ function Dashboard() {
           ======================================== */}
 
           {loading && (
-            <div className="border border-white/[0.08] bg-[#142c30]/60 p-10 text-center">
 
-              <div className="flex items-center justify-center gap-3 text-sm text-[#8da39f]">
+            <div className="rounded-xl border border-white/[0.08] bg-[#121827] p-12 text-center shadow-[0_18px_60px_rgba(0,0,0,0.15)]">
 
-                <span className="h-2 w-2 animate-pulse rounded-full bg-[#8fcdbc]" />
+              <div className="flex items-center justify-center gap-3 text-sm text-[#94A3B8]">
+
+                <span className="h-2 w-2 animate-pulse rounded-full bg-[#10B981]" />
 
                 Loading your resumes
 
               </div>
 
             </div>
+
           )}
 
           {/* ========================================
-              EMPTY
+              EMPTY STATE
           ======================================== */}
 
           {!loading && resumes.length === 0 && !error && (
-            <div className="border border-dashed border-white/[0.12] bg-[#142c30]/40 px-6 py-16 text-center">
 
-              <div className="mx-auto flex h-12 w-12 items-center justify-center border border-[#8fcdbc]/15 bg-[#8fcdbc]/[0.06] text-xl font-light text-[#8fcdbc]">
+            <div className="rounded-xl border border-dashed border-white/[0.12] bg-[#121827] px-6 py-20 text-center shadow-[0_18px_60px_rgba(0,0,0,0.15)]">
+
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl border border-[#6366F1]/20 bg-[#6366F1]/10 text-2xl font-light text-[#A5B4FC]">
                 +
               </div>
 
-              <h3 className="mt-5 text-lg font-semibold text-[#dce8e4]">
+              <h3 className="mt-6 text-xl font-semibold text-[#F8FAFC]">
                 No resumes yet
               </h3>
 
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#718986]">
-                Upload your first resume to begin your analysis.
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#94A3B8]">
+                Upload your first resume to begin your analysis and discover
+                where your profile can become stronger.
               </p>
 
               <button
                 type="button"
                 onClick={openFilePicker}
                 disabled={uploading}
-                className="mt-6 bg-[#8fcdbc] px-5 py-3 text-sm font-semibold text-[#10282c] transition hover:bg-[#a5ddcd] disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-7 rounded-lg bg-[#6366F1] px-6 py-3 text-sm font-semibold text-white shadow-[0_8px_25px_rgba(99,102,241,0.18)] transition hover:bg-[#818CF8] disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {uploading
-                  ? 'Uploading...'
-                  : 'Upload resume'}
+                {uploading ? 'Uploading...' : 'Upload resume'}
               </button>
 
             </div>
+
           )}
 
           {/* ========================================
@@ -587,6 +632,7 @@ function Dashboard() {
           ======================================== */}
 
           {!loading && resumes.length > 0 && (
+
             <div className="grid gap-3">
 
               {resumes.map((resume, index) => {
@@ -613,40 +659,43 @@ function Dashboard() {
                   deletingId === resumeId
 
                 return (
+
                   <div
                     key={resumeId || index}
-                    className="group border border-white/[0.08] bg-[#142c30]/65 p-5 transition duration-200 hover:border-[#8fcdbc]/20 hover:bg-[#173237]"
+                    className="group rounded-xl border border-white/[0.08] bg-[#121827] p-5 shadow-[0_18px_60px_rgba(0,0,0,0.12)] transition duration-200 hover:border-white/[0.14] hover:bg-[#161D2D]"
                   >
 
                     <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
 
-                      {/* ========================================
-                          RESUME INFO
-                      ======================================== */}
+                      {/* RESUME INFO */}
 
                       <div className="flex min-w-0 items-center gap-4">
 
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center border border-[#8fcdbc]/15 bg-[#8fcdbc]/[0.06] text-xs font-bold text-[#8fcdbc]">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-[#6366F1]/20 bg-[#6366F1]/10 text-xs font-bold tracking-wide text-[#A5B4FC]">
                           CV
                         </div>
 
                         <div className="min-w-0">
 
-                          <h3 className="truncate text-sm font-semibold text-[#dce8e4]">
+                          <h3 className="truncate text-sm font-semibold text-[#F8FAFC]">
                             {resumeName}
                           </h3>
 
-                          <p className="mt-1 text-xs text-[#718986]">
-                            Ready for analysis
-                          </p>
+                          <div className="mt-1.5 flex items-center gap-2">
+
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
+
+                            <p className="text-xs text-[#64748B]">
+                              Ready for analysis
+                            </p>
+
+                          </div>
 
                         </div>
 
                       </div>
 
-                      {/* ========================================
-                          ACTIONS
-                      ======================================== */}
+                      {/* ACTIONS */}
 
                       <div className="flex flex-wrap gap-2">
 
@@ -657,7 +706,7 @@ function Dashboard() {
                           onClick={() =>
                             handleDownload(
                               resumeId,
-                              resumeName
+                              resumeName,
                             )
                           }
                           disabled={
@@ -665,19 +714,17 @@ function Dashboard() {
                             isDownloading ||
                             isDeleting
                           }
-                          className="flex min-w-[105px] items-center justify-center gap-2 border border-white/[0.08] bg-white/[0.025] px-4 py-2.5 text-xs font-semibold text-[#9aaea9] transition hover:border-[#8fcdbc]/25 hover:bg-[#8fcdbc]/[0.05] hover:text-[#a9d9cc] disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex min-w-[110px] items-center justify-center gap-2 rounded-lg border border-white/[0.08] bg-[#161D2D] px-4 py-2.5 text-xs font-semibold text-[#CBD5E1] transition hover:border-[#6366F1]/30 hover:bg-[#6366F1]/10 hover:text-[#A5B4FC] disabled:cursor-not-allowed disabled:opacity-50"
                         >
 
                           {isDownloading ? (
                             <>
-                              <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#8fcdbc]/30 border-t-[#8fcdbc]" />
-
+                              <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#818CF8]/30 border-t-[#818CF8]" />
                               Preparing
                             </>
                           ) : (
                             <>
                               ↓
-
                               Download
                             </>
                           )}
@@ -691,7 +738,7 @@ function Dashboard() {
                           onClick={() =>
                             handleAnalyze(
                               resumeId,
-                              resumeName
+                              resumeName,
                             )
                           }
                           disabled={
@@ -699,13 +746,12 @@ function Dashboard() {
                             !resumeId ||
                             isDeleting
                           }
-                          className="flex min-w-[125px] items-center justify-center gap-2 border border-[#8fcdbc]/20 bg-[#8fcdbc]/[0.06] px-4 py-2.5 text-xs font-semibold text-[#9fd6c7] transition duration-200 hover:border-[#8fcdbc]/40 hover:bg-[#8fcdbc]/[0.1] disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex min-w-[120px] items-center justify-center gap-2 rounded-lg bg-[#6366F1] px-4 py-2.5 text-xs font-semibold text-white shadow-[0_6px_20px_rgba(99,102,241,0.14)] transition hover:bg-[#818CF8] disabled:cursor-not-allowed disabled:opacity-50"
                         >
 
                           {isAnalyzing ? (
                             <>
-                              <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#8fcdbc]/30 border-t-[#8fcdbc]" />
-
+                              <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                               Analyzing
                             </>
                           ) : (
@@ -728,7 +774,7 @@ function Dashboard() {
                             !resumeId ||
                             isDeleting
                           }
-                          className="flex min-w-[105px] items-center justify-center border border-white/[0.08] bg-white/[0.025] px-4 py-2.5 text-xs font-semibold text-[#9aaea9] transition hover:border-[#8fcdbc]/25 hover:text-[#a9d9cc] disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex min-w-[110px] items-center justify-center rounded-lg border border-[#10B981]/20 bg-[#10B981]/[0.06] px-4 py-2.5 text-xs font-semibold text-[#6EE7B7] transition hover:border-[#10B981]/35 hover:bg-[#10B981]/10 disabled:cursor-not-allowed disabled:opacity-50"
                         >
                           Job match
                         </button>
@@ -747,13 +793,12 @@ function Dashboard() {
                             !resumeId ||
                             isDeleting
                           }
-                          className="flex min-w-[85px] items-center justify-center gap-2 border border-[#d89572]/15 bg-[#d89572]/[0.025] px-4 py-2.5 text-xs font-semibold text-[#c99682] transition hover:border-[#d89572]/35 hover:bg-[#d89572]/[0.07] hover:text-[#e0ad99] disabled:cursor-not-allowed disabled:opacity-50"
+                          className="flex min-w-[85px] items-center justify-center gap-2 rounded-lg border border-[#EF4444]/20 bg-[#EF4444]/[0.05] px-4 py-2.5 text-xs font-semibold text-[#FCA5A5] transition hover:border-[#EF4444]/35 hover:bg-[#EF4444]/10 disabled:cursor-not-allowed disabled:opacity-50"
                         >
 
                           {isDeleting ? (
                             <>
-                              <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#d89572]/30 border-t-[#d89572]" />
-
+                              <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#EF4444]/30 border-t-[#EF4444]" />
                               Deleting
                             </>
                           ) : (
@@ -767,10 +812,12 @@ function Dashboard() {
                     </div>
 
                   </div>
+
                 )
               })}
 
             </div>
+
           )}
 
         </section>
@@ -782,29 +829,30 @@ function Dashboard() {
       ======================================== */}
 
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#061215]/80 px-5 backdrop-blur-sm">
 
-          <div className="w-full max-w-md border border-white/[0.1] bg-[#142c30] p-6 shadow-[0_25px_80px_rgba(0,0,0,0.45)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020617]/80 px-5 backdrop-blur-sm">
+
+          <div className="w-full max-w-md rounded-2xl border border-white/[0.1] bg-[#121827] p-7 shadow-[0_30px_100px_rgba(0,0,0,0.65)]">
 
             {/* MODAL HEADER */}
 
             <div className="flex items-start gap-4">
 
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center border border-[#d89572]/20 bg-[#d89572]/[0.07] text-sm text-[#d89572]">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-[#EF4444]/20 bg-[#EF4444]/10 text-sm font-semibold text-[#FCA5A5]">
                 !
               </div>
 
               <div>
 
-                <h2 className="text-lg font-semibold text-[#e8f1ee]">
+                <h2 className="text-lg font-semibold text-[#F8FAFC]">
                   Delete resume?
                 </h2>
 
-                <p className="mt-2 text-sm leading-6 text-[#829894]">
+                <p className="mt-2 text-sm leading-6 text-[#94A3B8]">
                   You're about to permanently delete:
                 </p>
 
-                <p className="mt-2 break-all text-sm font-medium text-[#c9d8d4]">
+                <p className="mt-2 break-all text-sm font-medium text-[#E2E8F0]">
                   {deleteTarget.name}
                 </p>
 
@@ -812,20 +860,20 @@ function Dashboard() {
 
             </div>
 
-            <p className="mt-5 border-t border-white/[0.07] pt-5 text-xs leading-5 text-[#687f7b]">
+            <p className="mt-6 border-t border-white/[0.08] pt-5 text-xs leading-5 text-[#64748B]">
               This action cannot be undone. The uploaded resume will be
               removed from your account.
             </p>
 
             {/* ACTIONS */}
 
-            <div className="mt-6 flex justify-end gap-2">
+            <div className="mt-7 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
 
               <button
                 type="button"
                 onClick={() => setDeleteTarget(null)}
                 disabled={deletingId === deleteTarget.id}
-                className="border border-white/[0.08] bg-white/[0.025] px-4 py-2.5 text-xs font-semibold text-[#9aaea9] transition hover:bg-white/[0.05] disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg border border-white/[0.08] bg-[#161D2D] px-4 py-2.5 text-xs font-semibold text-[#CBD5E1] transition hover:border-white/[0.14] hover:bg-[#1A2233] disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -834,13 +882,12 @@ function Dashboard() {
                 type="button"
                 onClick={handleDelete}
                 disabled={deletingId === deleteTarget.id}
-                className="flex min-w-[110px] items-center justify-center gap-2 bg-[#d89572] px-4 py-2.5 text-xs font-semibold text-[#1d2424] transition hover:bg-[#e1a287] disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex min-w-[120px] items-center justify-center gap-2 rounded-lg bg-[#EF4444] px-4 py-2.5 text-xs font-semibold text-white shadow-[0_8px_25px_rgba(239,68,68,0.15)] transition hover:bg-[#F87171] disabled:cursor-not-allowed disabled:opacity-60"
               >
 
                 {deletingId === deleteTarget.id ? (
                   <>
-                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#1d2424]/30 border-t-[#1d2424]" />
-
+                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/30 border-t-white" />
                     Deleting
                   </>
                 ) : (
@@ -854,6 +901,7 @@ function Dashboard() {
           </div>
 
         </div>
+
       )}
 
     </main>

@@ -1,140 +1,201 @@
-import { useState } from 'react'
-import { loginUser } from '../services/authService'
-import { useAuth } from '../context/AuthContext.jsx'
+import { useState } from "react";
+import { loginUser } from "../services/authService";
+import { useAuth } from "../context/AuthContext.jsx";
 
 function Login({ onRegister }) {
-  const { login } = useAuth()
+  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  })
+    email: "",
+    password: "",
+  });
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (event) => {
-    const { name, value } = event.target
+    const { name, value } = event.target;
 
     setFormData((current) => ({
       ...current,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
+    event.preventDefault();
 
-    setError('')
+    setError("");
 
     if (!formData.email.trim() || !formData.password) {
-      setError('Please enter your email and password.')
-      return
+      setError("Please enter your email and password.");
+      return;
     }
 
     try {
-      setLoading(true)
+      setLoading(true);
 
       const data = await loginUser({
         email: formData.email.trim(),
         password: formData.password,
-      })
+      });
 
       if (!data.token) {
-        throw new Error('Login succeeded but no authentication token was returned.')
+        throw new Error(
+          "Login succeeded but no authentication token was returned."
+        );
       }
 
-      login(data.token)
+      login(data.token);
     } catch (error) {
-      setError(error.message)
+      setError(error.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <main className="min-h-screen bg-[#0d2024] text-[#edf5f2]">
-      <div className="mx-auto flex min-h-screen max-w-7xl items-center px-6 py-10 sm:px-8 lg:px-12">
-        <div className="grid w-full items-center gap-14 lg:grid-cols-[1fr_440px] lg:gap-24">
+    <main className="min-h-screen bg-[#080C18] text-[#F8FAFC]">
+      <div className="mx-auto flex min-h-screen max-w-7xl items-center px-5 py-8 sm:px-8 lg:px-10">
+        <div className="grid w-full items-center gap-12 lg:grid-cols-[1fr_440px] lg:gap-20">
+          {/* LEFT SIDE */}
           <section className="hidden lg:block">
-            <div className="mb-8 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center border border-[#8fcdbc]/20 bg-[#8fcdbc]/[0.07] text-sm font-bold text-[#8fcdbc]">
-                RA
+            <div className="max-w-xl">
+              {/* Brand */}
+              <div className="mb-12 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#6366F1]/30 bg-[#6366F1]/10">
+                  <span className="text-sm font-bold text-[#818CF8]">
+                    RA
+                  </span>
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-[#F8FAFC]">
+                    Resume Analyzer
+                  </p>
+
+                  <p className="mt-0.5 text-[10px] uppercase tracking-[0.16em] text-[#64748B]">
+                    Career intelligence
+                  </p>
+                </div>
               </div>
 
-              <span className="text-sm font-semibold tracking-wide text-[#dce9e5]">
-                Resume Analyzer
-              </span>
-            </div>
+              {/* Intro */}
+              <div className="flex items-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
 
-            <p className="mb-5 text-xs font-semibold uppercase tracking-[0.2em] text-[#8fcdbc]">
-              Your career workspace
-            </p>
-
-            <h1 className="max-w-xl text-5xl font-semibold leading-[1.05] tracking-[-0.04em] text-[#f1f6f3]">
-              Build a resume that gets noticed.
-            </h1>
-
-            <p className="mt-6 max-w-lg text-base leading-7 text-[#91a6a3]">
-              Analyze your experience, understand your skill profile, and
-              measure your resume against the opportunities that matter.
-            </p>
-
-            <div className="mt-10 flex items-center gap-8 text-sm text-[#78908c]">
-              <div>
-                <p className="text-lg font-semibold text-[#c8d9d4]">01</p>
-                <p className="mt-1">Upload</p>
+                <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#10B981]">
+                  Resume intelligence
+                </span>
               </div>
 
-              <div className="h-px w-10 bg-white/[0.08]" />
+              <h1 className="mt-5 max-w-2xl text-5xl font-semibold leading-[1.05] tracking-[-0.045em] text-[#F8FAFC] xl:text-6xl">
+                Turn your resume into a stronger career profile.
+              </h1>
 
-              <div>
-                <p className="text-lg font-semibold text-[#c8d9d4]">02</p>
-                <p className="mt-1">Analyze</p>
-              </div>
+              <p className="mt-7 max-w-xl text-base leading-8 text-[#94A3B8]">
+                Understand how your resume performs, discover your strongest
+                skills, identify gaps, and see how closely you match the roles
+                you want.
+              </p>
 
-              <div className="h-px w-10 bg-white/[0.08]" />
+              {/* Process */}
+              <div className="mt-12 max-w-xl overflow-hidden rounded-xl border border-white/[0.08] bg-[#121827]">
+                <div className="grid grid-cols-3">
+                  <div className="border-r border-white/[0.08] p-5">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">
+                      Step
+                    </p>
 
-              <div>
-                <p className="text-lg font-semibold text-[#c8d9d4]">03</p>
-                <p className="mt-1">Improve</p>
+                    <p className="mt-3 text-2xl font-semibold text-[#F8FAFC]">
+                      01
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#94A3B8]">
+                      Upload
+                    </p>
+                  </div>
+
+                  <div className="border-r border-white/[0.08] p-5">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">
+                      Step
+                    </p>
+
+                    <p className="mt-3 text-2xl font-semibold text-[#F8FAFC]">
+                      02
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#94A3B8]">
+                      Analyze
+                    </p>
+                  </div>
+
+                  <div className="p-5">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#64748B]">
+                      Step
+                    </p>
+
+                    <p className="mt-3 text-2xl font-semibold text-[#10B981]">
+                      03
+                    </p>
+
+                    <p className="mt-1 text-xs text-[#94A3B8]">
+                      Improve
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
 
+          {/* LOGIN CARD */}
           <section className="w-full">
-            <div className="border border-white/[0.09] bg-[#142c30]/90 p-7 shadow-[0_30px_90px_rgba(0,0,0,0.3)] backdrop-blur-2xl sm:p-9">
-              <div className="mb-8 lg:hidden">
-                <div className="mb-6 flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center border border-[#8fcdbc]/20 bg-[#8fcdbc]/[0.07] text-sm font-bold text-[#8fcdbc]">
+            <div className="rounded-2xl border border-white/[0.08] bg-[#121827] p-6 shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:p-8">
+              {/* Mobile Brand */}
+              <div className="mb-8 flex items-center gap-3 lg:hidden">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#6366F1]/30 bg-[#6366F1]/10">
+                  <span className="text-sm font-bold text-[#818CF8]">
                     RA
-                  </div>
-
-                  <span className="text-sm font-semibold text-[#dce9e5]">
-                    Resume Analyzer
                   </span>
+                </div>
+
+                <div>
+                  <p className="text-sm font-semibold text-[#F8FAFC]">
+                    Resume Analyzer
+                  </p>
+
+                  <p className="text-[10px] uppercase tracking-[0.14em] text-[#64748B]">
+                    Career intelligence
+                  </p>
                 </div>
               </div>
 
+              {/* Heading */}
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#78908c]">
-                  Welcome back
-                </p>
+                <div className="mb-5 flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#6366F1]" />
 
-                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-[#f0f5f2]">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#818CF8]">
+                    Welcome back
+                  </span>
+                </div>
+
+                <h2 className="text-2xl font-semibold tracking-[-0.03em] text-[#F8FAFC]">
                   Sign in to your workspace
                 </h2>
 
-                <p className="mt-2 text-sm leading-6 text-[#829894]">
+                <p className="mt-2 text-sm leading-6 text-[#94A3B8]">
                   Continue analyzing and improving your resume.
                 </p>
               </div>
 
+              {/* Form */}
               <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                {/* Email */}
                 <div>
                   <label
                     htmlFor="email"
-                    className="mb-2 block text-sm font-medium text-[#c5d3d0]"
+                    className="mb-2.5 block text-xs font-semibold uppercase tracking-[0.08em] text-[#CBD5E1]"
                   >
                     Email address
                   </label>
@@ -147,14 +208,15 @@ function Login({ onRegister }) {
                     onChange={handleChange}
                     autoComplete="email"
                     placeholder="you@example.com"
-                    className="w-full border border-white/[0.09] bg-[#0d2024]/70 px-4 py-3.5 text-sm text-[#edf5f2] outline-none transition placeholder:text-[#526b68] focus:border-[#8fcdbc]/50 focus:bg-[#10262a] focus:ring-2 focus:ring-[#8fcdbc]/10"
+                    className="w-full rounded-lg border border-white/[0.08] bg-[#0D1220] px-4 py-3.5 text-sm text-[#F8FAFC] outline-none transition duration-200 placeholder:text-[#475569] hover:border-white/[0.14] focus:border-[#6366F1]/60 focus:bg-[#0D1220] focus:ring-4 focus:ring-[#6366F1]/10"
                   />
                 </div>
 
+                {/* Password */}
                 <div>
                   <label
                     htmlFor="password"
-                    className="mb-2 block text-sm font-medium text-[#c5d3d0]"
+                    className="mb-2.5 block text-xs font-semibold uppercase tracking-[0.08em] text-[#CBD5E1]"
                   >
                     Password
                   </label>
@@ -167,48 +229,62 @@ function Login({ onRegister }) {
                     onChange={handleChange}
                     autoComplete="current-password"
                     placeholder="Enter your password"
-                    className="w-full border border-white/[0.09] bg-[#0d2024]/70 px-4 py-3.5 text-sm text-[#edf5f2] outline-none transition placeholder:text-[#526b68] focus:border-[#8fcdbc]/50 focus:bg-[#10262a] focus:ring-2 focus:ring-[#8fcdbc]/10"
+                    className="w-full rounded-lg border border-white/[0.08] bg-[#0D1220] px-4 py-3.5 text-sm text-[#F8FAFC] outline-none transition duration-200 placeholder:text-[#475569] hover:border-white/[0.14] focus:border-[#6366F1]/60 focus:bg-[#0D1220] focus:ring-4 focus:ring-[#6366F1]/10"
                   />
                 </div>
 
+                {/* Error */}
                 {error && (
-                  <div className="border border-[#d89572]/20 bg-[#d89572]/[0.08] px-4 py-3 text-sm leading-6 text-[#e7b49c]">
-                    {error}
+                  <div className="flex items-start gap-3 rounded-lg border border-[#EF4444]/20 bg-[#EF4444]/[0.06] px-4 py-3.5">
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#EF4444]/10 text-[11px] font-bold text-[#EF4444]">
+                      !
+                    </div>
+
+                    <p className="text-sm leading-5 text-[#FCA5A5]">
+                      {error}
+                    </p>
                   </div>
                 )}
 
+                {/* Submit */}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-[#8fcdbc] px-5 py-3.5 text-sm font-semibold text-[#10282c] shadow-[0_10px_30px_rgba(143,205,188,0.12)] transition duration-200 hover:bg-[#a5ddcd] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex w-full items-center justify-center rounded-lg bg-[#6366F1] px-5 py-3.5 text-sm font-semibold text-white transition duration-200 hover:bg-[#818CF8] focus:outline-none focus:ring-4 focus:ring-[#6366F1]/15 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {loading ? 'Signing in...' : 'Sign in'}
+                  {loading ? "Signing in..." : "Sign in"}
                 </button>
               </form>
 
-              <div className="mt-7 border-t border-white/[0.07] pt-6 text-center">
-                <p className="text-sm text-[#718986]">
+              {/* Register */}
+              <div className="mt-8 border-t border-white/[0.08] pt-6 text-center">
+                <p className="text-sm text-[#64748B]">
                   Don't have an account?
                 </p>
 
                 <button
                   type="button"
                   onClick={onRegister}
-                  className="mt-2 text-sm font-semibold text-[#9fd6c7] transition hover:text-[#c0e7dc]"
+                  className="mt-2 text-sm font-semibold text-[#818CF8] transition hover:text-[#A5B4FC]"
                 >
                   Create an account
                 </button>
               </div>
 
-              <p className="mt-5 text-center text-xs leading-5 text-[#647b78]">
-                Your session is securely maintained using authentication tokens.
-              </p>
+              {/* Footer */}
+              <div className="mt-6 flex items-center justify-center gap-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" />
+
+                <p className="text-[10px] uppercase tracking-[0.12em] text-[#64748B]">
+                  Secure authentication
+                </p>
+              </div>
             </div>
           </section>
         </div>
       </div>
     </main>
-  )
+  );
 }
 
-export default Login
+export default Login;

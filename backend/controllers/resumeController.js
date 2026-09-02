@@ -14,6 +14,10 @@ const { parseResume } = require("../services/resumeParser");
 const { analyzeResume } = require("../services/resumeAnalyzer");
 const { matchResumeWithJob } = require("../services/jobMatcher");
 
+// ============================================
+// GET ALL USER RESUMES
+// ============================================
+
 const getUserResumes = async (req, res) => {
   try {
     const resumes = await getResumesByUserId(req.user.id);
@@ -33,11 +37,18 @@ const getUserResumes = async (req, res) => {
   }
 };
 
+// ============================================
+// GET SINGLE RESUME
+// ============================================
+
 const getSingleResume = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const resume = await getResumeById(id, req.user.id);
+    const resume = await getResumeById(
+      id,
+      req.user.id
+    );
 
     if (!resume) {
       return res.status(404).json({
@@ -51,7 +62,10 @@ const getSingleResume = async (req, res) => {
       resume
     });
   } catch (error) {
-    console.error("Get resume error:", error.message);
+    console.error(
+      "Get resume error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
@@ -59,6 +73,10 @@ const getSingleResume = async (req, res) => {
     });
   }
 };
+
+// ============================================
+// UPLOAD RESUME
+// ============================================
 
 const uploadResume = async (req, res) => {
   try {
@@ -74,16 +92,23 @@ const uploadResume = async (req, res) => {
       req.file.mimetype
     );
 
-    if (!extractedText || !extractedText.trim()) {
+    if (
+      !extractedText ||
+      !extractedText.trim()
+    ) {
       try {
         fs.unlinkSync(req.file.path);
       } catch (deleteError) {
-        console.error("Uploaded file cleanup error:", deleteError.message);
+        console.error(
+          "Uploaded file cleanup error:",
+          deleteError.message
+        );
       }
 
       return res.status(400).json({
         success: false,
-        message: "Could not extract text from the resume"
+        message:
+          "Could not extract text from the resume"
       });
     }
 
@@ -99,32 +124,53 @@ const uploadResume = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Resume uploaded and parsed successfully",
+      message:
+        "Resume uploaded and parsed successfully",
       resume
     });
   } catch (error) {
-    if (req.file && req.file.path) {
+    if (
+      req.file &&
+      req.file.path
+    ) {
       try {
         fs.unlinkSync(req.file.path);
       } catch (deleteError) {
-        console.error("Uploaded file cleanup error:", deleteError.message);
+        console.error(
+          "Uploaded file cleanup error:",
+          deleteError.message
+        );
       }
     }
 
-    console.error("Resume upload error:", error.message);
+    console.error(
+      "Resume upload error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
-      message: "Failed to upload or parse resume"
+      message:
+        "Failed to upload or parse resume"
     });
   }
 };
 
-const analyzeUploadedResume = async (req, res) => {
+// ============================================
+// ANALYZE RESUME
+// ============================================
+
+const analyzeUploadedResume = async (
+  req,
+  res
+) => {
   try {
     const { id } = req.params;
 
-    const resume = await getResumeById(id, req.user.id);
+    const resume = await getResumeById(
+      id,
+      req.user.id
+    );
 
     if (!resume) {
       return res.status(404).json({
@@ -133,49 +179,118 @@ const analyzeUploadedResume = async (req, res) => {
       });
     }
 
-    if (!resume.extracted_text) {
+    if (
+      !resume.extracted_text ||
+      !resume.extracted_text.trim()
+    ) {
       return res.status(400).json({
         success: false,
-        message: "No extracted text available for this resume"
+        message:
+          "No extracted text available for this resume"
       });
     }
 
-    const analysis = analyzeResume(resume.extracted_text);
+    // Run resume analysis
+    const analysis = analyzeResume(
+      resume.extracted_text
+    );
 
-    const savedAnalysis = await saveResumeAnalysis({
-      resumeId: resume.id,
-      overallScore: analysis.overallScore,
-      wordCount: analysis.wordCount,
-      skillCount: analysis.skillCount,
-      skills: analysis.skills,
-      sectionScore: analysis.sectionScore,
-      skillScore: analysis.skillScore,
-      lengthScore: analysis.lengthScore,
-      sections: analysis.sections,
-      recommendations: analysis.recommendations
-    });
+    // Save complete analysis
+    const savedAnalysis =
+      await saveResumeAnalysis({
+        resumeId: resume.id,
+
+        // Existing scores
+        overallScore:
+          analysis.overallScore,
+
+        wordCount:
+          analysis.wordCount,
+
+        skillCount:
+          analysis.skillCount,
+
+        skills:
+          analysis.skills,
+
+        sectionScore:
+          analysis.sectionScore,
+
+        skillScore:
+          analysis.skillScore,
+
+        lengthScore:
+          analysis.lengthScore,
+
+        sections:
+          analysis.sections,
+
+        recommendations:
+          analysis.recommendations,
+
+        // Detailed analysis
+        contentScore:
+          analysis.contentScore,
+
+        detailedSectionScores:
+          analysis.detailedSectionScores,
+
+        strengths:
+          analysis.strengths,
+
+        weaknesses:
+          analysis.weaknesses,
+
+        contactInformation:
+          analysis.contactInformation,
+
+        actionVerbs:
+          analysis.actionVerbs,
+
+        quantifiableAchievements:
+          analysis.quantifiableAchievements,
+
+        // ATS compatibility
+        atsCompatibility:
+          analysis.atsCompatibility
+      });
 
     res.status(200).json({
       success: true,
-      message: "Resume analyzed successfully",
+      message:
+        "Resume analyzed successfully",
       resumeId: resume.id,
       analysis: savedAnalysis
     });
   } catch (error) {
-    console.error("Resume analysis error:", error.message);
+    console.error(
+      "Resume analysis error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
-      message: "Failed to analyze resume"
+      message:
+        "Failed to analyze resume"
     });
   }
 };
 
-const getSavedAnalysis = async (req, res) => {
+// ============================================
+// GET SAVED ANALYSIS
+// ============================================
+
+const getSavedAnalysis = async (
+  req,
+  res
+) => {
   try {
     const { id } = req.params;
 
-    const resume = await getResumeById(id, req.user.id);
+    const resume = await getResumeById(
+      id,
+      req.user.id
+    );
 
     if (!resume) {
       return res.status(404).json({
@@ -184,12 +299,14 @@ const getSavedAnalysis = async (req, res) => {
       });
     }
 
-    const analysis = await getResumeAnalysis(id);
+    const analysis =
+      await getResumeAnalysis(id);
 
     if (!analysis) {
       return res.status(404).json({
         success: false,
-        message: "No analysis found for this resume"
+        message:
+          "No analysis found for this resume"
       });
     }
 
@@ -199,20 +316,32 @@ const getSavedAnalysis = async (req, res) => {
       analysis
     });
   } catch (error) {
-    console.error("Get analysis error:", error.message);
+    console.error(
+      "Get analysis error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
-      message: "Failed to fetch resume analysis"
+      message:
+        "Failed to fetch resume analysis"
     });
   }
 };
 
-const getAnalysisHistory = async (req, res) => {
+// ============================================
+// GET ANALYSIS HISTORY
+// ============================================
+
+const getAnalysisHistory = async (
+  req,
+  res
+) => {
   try {
-    const history = await getAnalysisHistoryByUserId(
-      req.user.id
-    );
+    const history =
+      await getAnalysisHistoryByUserId(
+        req.user.id
+      );
 
     res.status(200).json({
       success: true,
@@ -220,28 +349,50 @@ const getAnalysisHistory = async (req, res) => {
       history
     });
   } catch (error) {
-    console.error("Get analysis history error:", error.message);
+    console.error(
+      "Get analysis history error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
-      message: "Failed to fetch analysis history"
+      message:
+        "Failed to fetch analysis history"
     });
   }
 };
 
-const matchResumeToJob = async (req, res) => {
+// ============================================
+// MATCH RESUME WITH JOB
+// ============================================
+
+const matchResumeToJob = async (
+  req,
+  res
+) => {
   try {
     const { id } = req.params;
-    const { jobDescription } = req.body;
 
-    if (!jobDescription || !jobDescription.trim()) {
+    const {
+      jobDescription
+    } = req.body;
+
+    if (
+      !jobDescription ||
+      !jobDescription.trim()
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Job description is required"
+        message:
+          "Job description is required"
       });
     }
 
-    const resume = await getResumeById(id, req.user.id);
+    const resume =
+      await getResumeById(
+        id,
+        req.user.id
+      );
 
     if (!resume) {
       return res.status(404).json({
@@ -250,39 +401,60 @@ const matchResumeToJob = async (req, res) => {
       });
     }
 
-    if (!resume.extracted_text) {
+    if (
+      !resume.extracted_text ||
+      !resume.extracted_text.trim()
+    ) {
       return res.status(400).json({
         success: false,
-        message: "No extracted text available for this resume"
+        message:
+          "No extracted text available for this resume"
       });
     }
 
-    const result = matchResumeWithJob(
-      resume.extracted_text,
-      jobDescription
-    );
+    const result =
+      matchResumeWithJob(
+        resume.extracted_text,
+        jobDescription
+      );
 
     res.status(200).json({
       success: true,
-      message: "Resume matched with job description successfully",
+      message:
+        "Resume matched with job description successfully",
       resumeId: resume.id,
       result
     });
   } catch (error) {
-    console.error("Job matching error:", error.message);
+    console.error(
+      "Job matching error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
-      message: "Failed to match resume with job description"
+      message:
+        "Failed to match resume with job description"
     });
   }
 };
 
-const downloadResume = async (req, res) => {
+// ============================================
+// DOWNLOAD RESUME
+// ============================================
+
+const downloadResume = async (
+  req,
+  res
+) => {
   try {
     const { id } = req.params;
 
-    const resume = await getResumeById(id, req.user.id);
+    const resume =
+      await getResumeById(
+        id,
+        req.user.id
+      );
 
     if (!resume) {
       return res.status(404).json({
@@ -291,10 +463,15 @@ const downloadResume = async (req, res) => {
       });
     }
 
-    if (!fs.existsSync(resume.file_path)) {
+    if (
+      !fs.existsSync(
+        resume.file_path
+      )
+    ) {
       return res.status(404).json({
         success: false,
-        message: "Resume file not found"
+        message:
+          "Resume file not found"
       });
     }
 
@@ -302,31 +479,53 @@ const downloadResume = async (req, res) => {
       resume.file_path,
       resume.original_name,
       (error) => {
-        if (error && !res.headersSent) {
-          console.error("Resume download error:", error.message);
+        if (
+          error &&
+          !res.headersSent
+        ) {
+          console.error(
+            "Resume download error:",
+            error.message
+          );
 
           res.status(500).json({
             success: false,
-            message: "Failed to download resume"
+            message:
+              "Failed to download resume"
           });
         }
       }
     );
   } catch (error) {
-    console.error("Resume download error:", error.message);
+    console.error(
+      "Resume download error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
-      message: "Server error while downloading resume"
+      message:
+        "Server error while downloading resume"
     });
   }
 };
 
-const removeResume = async (req, res) => {
+// ============================================
+// DELETE RESUME
+// ============================================
+
+const removeResume = async (
+  req,
+  res
+) => {
   try {
     const { id } = req.params;
 
-    const resume = await deleteResume(id, req.user.id);
+    const resume =
+      await deleteResume(
+        id,
+        req.user.id
+      );
 
     if (!resume) {
       return res.status(404).json({
@@ -335,27 +534,42 @@ const removeResume = async (req, res) => {
       });
     }
 
+    // Delete physical file
     if (resume.file_path) {
       try {
-        fs.unlinkSync(resume.file_path);
+        fs.unlinkSync(
+          resume.file_path
+        );
       } catch (error) {
-        console.error("Resume file deletion error:", error.message);
+        console.error(
+          "Resume file deletion error:",
+          error.message
+        );
       }
     }
 
     res.status(200).json({
       success: true,
-      message: "Resume deleted successfully"
+      message:
+        "Resume deleted successfully"
     });
   } catch (error) {
-    console.error("Delete resume error:", error.message);
+    console.error(
+      "Delete resume error:",
+      error.message
+    );
 
     res.status(500).json({
       success: false,
-      message: "Server error while deleting resume"
+      message:
+        "Server error while deleting resume"
     });
   }
 };
+
+// ============================================
+// EXPORTS
+// ============================================
 
 module.exports = {
   getUserResumes,
