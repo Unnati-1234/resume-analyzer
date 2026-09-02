@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 # Environment variables
 .env
@@ -47,3 +48,15 @@ backend/dist/
 .DS_Store
 Thumbs.db
 node_modules/
+=======
+node_modules/
+backend/node_modules/
+backend/uploads/
+.env
+backend/.env
+dist/
+build/
+.DS_Store
+*.log
+.env
+>>>>>>> 17a8fe89d47d1f6cd28bf32ace5f4512339e408d
