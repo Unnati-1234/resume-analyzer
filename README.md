@@ -82,14 +82,32 @@ Users can enter a job description and compare it with their resume.
 
 ## 📸 Screenshots
 
+### 🔐 Login
+![Login](screenshots/login.png)
+
 ### 🏠 Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+### 📤 Resume Upload
+![Resume Upload](screenshots/resume-upload.png)
 
 ### 📄 Resume Analysis
+![Resume Analysis](screenshots/resume-analysis.png)
+
+### 📊 Resume Analysis Score
+![Resume Analysis Score](screenshots/resume-analysis-score.png)
+
+### 🔍 Resume Analysis Details
+![Resume Analysis Details](screenshots/resume-analysis-details.png)
 
 ### 🎯 Job Matching
+![Job Matching](screenshots/job-matching.png)
+
+### 📈 Job Matching Results
+![Job Matching Results](screenshots/job-matching-results.png)
 
 ### 📜 Analysis History
-
+![Analysis History](screenshots/analysis-history.png)
 ---
 
 ⭐ Feedback and suggestions are welcome!
